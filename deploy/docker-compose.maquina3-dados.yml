@@ -1,0 +1,22 @@
+# Subir na Máquina 3 (Redis + combustível). Exponha 6379 apenas para a Máquina 1 (firewall/security group).
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_cluster:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  combustivel:
+    build:
+      context: ..
+      dockerfile: services/combustivel/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      PRECO_GASOLINA_LITRO_REAIS: ${PRECO_GASOLINA_LITRO_REAIS:-6.20}
+      CONSUMO_KM_POR_LITRO: ${CONSUMO_KM_POR_LITRO:-12.0}
+
+volumes:
+  redis_cluster: {}

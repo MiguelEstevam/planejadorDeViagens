@@ -1,0 +1,61 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  clima:
+    build:
+      context: .
+      dockerfile: services/clima/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      OPEN_METEO_URL: ${OPEN_METEO_URL:-https://api.open-meteo.com/v1/forecast}
+
+  rota:
+    build:
+      context: .
+      dockerfile: services/rota/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      NOMINATIM_URL: ${NOMINATIM_URL:-https://nominatim.openstreetmap.org/search}
+      OSRM_URL: ${OSRM_URL:-https://router.project-osrm.org/route/v1/driving}
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-PlanejadorViagensInteligentes/1.0 (docker; acadêmico)}
+
+  combustivel:
+    build:
+      context: .
+      dockerfile: services/combustivel/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      PRECO_GASOLINA_LITRO_REAIS: ${PRECO_GASOLINA_LITRO_REAIS:-6.20}
+      CONSUMO_KM_POR_LITRO: ${CONSUMO_KM_POR_LITRO:-12.0}
+
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - clima
+      - rota
+      - combustivel
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CLIMA_SERVICE_URL: http://clima:8001
+      ROTA_SERVICE_URL: http://rota:8002
+      COMBUSTIVEL_SERVICE_URL: http://combustivel:8003
+      HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-12}
+      HTTP_MAX_RETRIES: ${HTTP_MAX_RETRIES:-3}
+      IDEMPOTENCY_TTL_SECONDS: ${IDEMPOTENCY_TTL_SECONDS:-86400}
+
+volumes:
+  redis_data: {}

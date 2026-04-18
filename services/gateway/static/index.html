@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planejador de Viagens Inteligentes</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f1419;
+        --card: #1a2332;
+        --accent: #3d9eff;
+        --text: #e8eef5;
+        --muted: #8b9bb4;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(1200px 600px at 20% 0%, #1a2a44, var(--bg));
+        color: var(--text);
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 4rem;
+      }
+      h1 {
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0 0 0.35rem;
+      }
+      p.lead {
+        color: var(--muted);
+        margin: 0 0 2rem;
+      }
+      form {
+        background: var(--card);
+        border: 1px solid #2a3a55;
+        border-radius: 14px;
+        padding: 1.5rem;
+        display: grid;
+        gap: 1rem;
+      }
+      label {
+        display: grid;
+        gap: 0.35rem;
+        font-size: 0.9rem;
+      }
+      input {
+        padding: 0.65rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #334868;
+        background: #0f1419;
+        color: var(--text);
+      }
+      button {
+        margin-top: 0.5rem;
+        padding: 0.85rem 1rem;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #3d9eff, #6b5cff);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      pre {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 12px;
+        background: #0b0f14;
+        border: 1px solid #243047;
+        overflow: auto;
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 560px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Planejador de Viagens Inteligentes</h1>
+      <p class="lead">Informe origem, destino e datas. O gateway agrega clima, rota e custo médio de combustível (ida e volta).</p>
+      <form id="f">
+        <label>Origem <input name="origem" required placeholder="Ex.: São Paulo, SP" /></label>
+        <label>Destino <input name="destino" required placeholder="Ex.: Curitiba, PR" /></label>
+        <div class="row">
+          <label>Data ida <input name="data_ida" type="date" required /></label>
+          <label>Data volta <input name="data_volta" type="date" required /></label>
+        </div>
+        <label>Idempotency-Key (opcional) <input name="idem" placeholder="UUID ou texto único" /></label>
+        <button type="submit">Planejar viagem</button>
+      </form>
+      <pre id="out" hidden></pre>
+    </main>
+    <script>
+      const out = document.getElementById("out");
+      document.getElementById("f").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const headers = { "Content-Type": "application/json" };
+        const idem = (fd.get("idem") || "").toString().trim();
+        if (idem) headers["Idempotency-Key"] = idem;
+        const body = {
+          origem: fd.get("origem").toString().trim(),
+          destino: fd.get("destino").toString().trim(),
+          data_ida: fd.get("data_ida"),
+          data_volta: fd.get("data_volta"),
+        };
+        out.hidden = false;
+        out.textContent = "Consultando serviços…";
+        e.target.querySelector("button").disabled = true;
+        try {
+          const r = await fetch("/api/v1/planejamento", { method: "POST", headers, body: JSON.stringify(body) });
+          const j = await r.json().catch(() => ({}));
+          out.textContent = JSON.stringify({ status: r.status, ...j }, null, 2);
+        } catch (err) {
+          out.textContent = String(err);
+        } finally {
+          e.target.querySelector("button").disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

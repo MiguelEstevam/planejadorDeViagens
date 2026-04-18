@@ -1,0 +1,15 @@
+# Subir na Máquina 1 (gateway). Build a partir da raiz do repositório:
+#   docker compose -f deploy/docker-compose.maquina1-gateway.yml --env-file deploy/env/three-nodes.env up -d --build
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - env/three-nodes.env
+    environment:
+      HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-12}
+      HTTP_MAX_RETRIES: ${HTTP_MAX_RETRIES:-3}
+      IDEMPOTENCY_TTL_SECONDS: ${IDEMPOTENCY_TTL_SECONDS:-86400}

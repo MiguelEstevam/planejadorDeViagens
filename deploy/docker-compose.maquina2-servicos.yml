@@ -1,0 +1,17 @@
+# Subir na Máquina 2 (clima + rota).
+services:
+  clima:
+    build:
+      context: ..
+      dockerfile: services/clima/Dockerfile
+    ports:
+      - "8001:8001"
+
+  rota:
+    build:
+      context: ..
+      dockerfile: services/rota/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-PlanejadorViagensInteligentes/1.0 (maquina2)}
