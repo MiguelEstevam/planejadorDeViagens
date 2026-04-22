@@ -1,5 +1,6 @@
 import math
 import os
+from typing import Any, Optional
 from urllib.parse import quote
 
 import httpx
@@ -25,6 +26,7 @@ class RotaResposta(BaseModel):
     destino_lat: float
     destino_lon: float
     resumo: str
+    geometria: Optional[dict[str, Any]] = None
     degradado: bool = False
 
 
@@ -80,7 +82,12 @@ async def rota(
             dlat, dlon, dlabel = await geocode(client, destino)
             coords = f"{olon},{olat};{dlon},{dlat}"
             try:
-                r = await client.get(f"{OSRM}/{coords}", params={"overview": "false"}, timeout=20.0)
+                r = await client.get(
+                    f"{OSRM}/{coords}", 
+                    params={"overview": "full", "geometries": "geojson"}, 
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=20.0
+                )
                 status_code = r.status_code
                 body = r.json() if status_code == 200 else {}
             except Exception as e:
@@ -122,6 +129,7 @@ async def rota(
         dist_m = float(rt.get("distance", 0))
         dur_s = int(float(rt.get("duration", 0)))
         km = dist_m / 1000.0
+        geom = rt.get("geometry")
         return RotaResposta(
             distancia_km=round(km, 2),
             duracao_segundos=dur_s,
@@ -132,6 +140,7 @@ async def rota(
             destino_lat=dlat,
             destino_lon=dlon,
             resumo=f"Rota viária: ~{km:.1f} km, ~{dur_s // 3600}h{(dur_s % 3600) // 60}min.",
+            geometria=geom,
             degradado=False,
         )
     except HTTPException:

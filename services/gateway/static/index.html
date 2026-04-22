@@ -4,135 +4,512 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Planejador de Viagens Inteligentes</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
       :root {
-        color-scheme: light dark;
-        --bg: #0f1419;
-        --card: #1a2332;
-        --accent: #3d9eff;
-        --text: #e8eef5;
-        --muted: #8b9bb4;
+        --bg: #0b0f1a;
+        --card-bg: #161c2d;
+        --input-bg: #0f1422;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: #2d3748;
+        --success: #10b981;
       }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: "Segoe UI", system-ui, sans-serif;
+        font-family: 'Inter', sans-serif;
         margin: 0;
-        min-height: 100vh;
-        background: radial-gradient(1200px 600px at 20% 0%, #1a2a44, var(--bg));
+        background-color: var(--bg);
         color: var(--text);
+        line-height: 1.5;
+        background-image: 
+          radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+          radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+        background-attachment: fixed;
       }
-      main {
-        max-width: 720px;
+
+      .container {
+        max-width: 900px;
         margin: 0 auto;
-        padding: 2.5rem 1.25rem 4rem;
+        padding: 3rem 1.5rem;
       }
+
+      header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
       h1 {
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        margin: 0 0 0.35rem;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #60a5fa, #c084fc);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.025em;
       }
-      p.lead {
-        color: var(--muted);
-        margin: 0 0 2rem;
-      }
-      form {
-        background: var(--card);
-        border: 1px solid #2a3a55;
-        border-radius: 14px;
-        padding: 1.5rem;
-        display: grid;
-        gap: 1rem;
-      }
-      label {
-        display: grid;
-        gap: 0.35rem;
-        font-size: 0.9rem;
-      }
-      input {
-        padding: 0.65rem 0.75rem;
-        border-radius: 8px;
-        border: 1px solid #334868;
-        background: #0f1419;
-        color: var(--text);
-      }
-      button {
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 1.1rem;
         margin-top: 0.5rem;
-        padding: 0.85rem 1rem;
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #3d9eff, #6b5cff);
-        color: #fff;
-        font-weight: 600;
-        cursor: pointer;
       }
-      button:disabled {
-        opacity: 0.6;
-        cursor: wait;
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       }
-      pre {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        border-radius: 12px;
-        background: #0b0f14;
-        border: 1px solid #243047;
-        overflow: auto;
-        font-size: 0.82rem;
-        line-height: 1.45;
+
+      form {
+        display: grid;
+        gap: 1.5rem;
       }
-      .row {
+
+      .grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      input {
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        color: var(--text);
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      }
+
+      button {
+        background: linear-gradient(135deg, var(--accent), #6366f1);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s, opacity 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Results Styling */
+      #results {
+        margin-top: 3rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+
+      #map {
+        height: 350px;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        z-index: 1;
+      }
+
+      .info-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+      }
+
+      .info-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        color: var(--accent);
+      }
+
+      .info-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .info-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .info-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+
+      .weather-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
       }
-      @media (max-width: 560px) {
-        .row {
+
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        margin-top: 1rem;
+      }
+
+      .badge.degraded {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+      }
+
+      .loader {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 640px) {
+        .grid-2, .result-grid {
           grid-template-columns: 1fr;
         }
+        h1 { font-size: 2rem; }
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Planejador de Viagens Inteligentes</h1>
-      <p class="lead">Informe origem, destino e datas. O gateway agrega clima, rota e custo médio de combustível (ida e volta).</p>
-      <form id="f">
-        <label>Origem <input name="origem" required placeholder="Ex.: São Paulo, SP" /></label>
-        <label>Destino <input name="destino" required placeholder="Ex.: Curitiba, PR" /></label>
-        <div class="row">
-          <label>Data ida <input name="data_ida" type="date" required /></label>
-          <label>Data volta <input name="data_volta" type="date" required /></label>
+    <div class="container">
+      <header>
+        <i data-lucide="map-pin" style="color: var(--accent); width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+        <h1>Planejador de Viagens</h1>
+        <p class="subtitle">Logística inteligente: clima, rotas e custos integrados.</p>
+      </header>
+
+      <div class="card">
+        <form id="travelForm">
+          <div class="grid-2">
+            <div class="form-group">
+              <label><i data-lucide="navigation-2"></i> Origem</label>
+              <input name="origem" required placeholder="Cidade, UF ou Endereço" />
+            </div>
+            <div class="form-group">
+              <label><i data-lucide="map-pinned"></i> Destino</label>
+              <input name="destino" required placeholder="Cidade, UF ou Endereço" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label><i data-lucide="calendar"></i> Data de Ida</label>
+              <input name="data_ida" type="date" required />
+            </div>
+            <div class="form-group">
+              <label><i data-lucide="calendar"></i> Data de Volta</label>
+              <input name="data_volta" type="date" required />
+            </div>
+          </div>
+
+
+
+          <button type="submit" id="submitBtn">
+            <i data-lucide="sparkles"></i> Gerar Planejamento
+          </button>
+        </form>
+      </div>
+
+      <div id="loading" class="loader" style="display: none;">
+        <i data-lucide="refresh-cw" style="animation: spin 2s linear infinite; margin-bottom: 1rem;"></i>
+        <p>Orquestrando serviços...</p>
+      </div>
+
+      <div id="results" style="display: none;">
+        <div id="map"></div>
+
+        <div class="result-grid">
+          <!-- Rota Card -->
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="route"></i>
+              <h3>Resumo da Rota</h3>
+            </div>
+            <div id="rotaSummary" style="margin-bottom: 1rem; font-weight: 500;"></div>
+            <div class="grid-2">
+              <div>
+                <div class="info-value" id="distanciaValue">0</div>
+                <div class="info-label">Distância (unidirecional)</div>
+              </div>
+              <div>
+                <div class="info-value" id="tempoValue">0</div>
+                <div class="info-label">Tempo estimado</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Combustível Card -->
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="fuel"></i>
+              <h3>Custo de Combustível</h3>
+            </div>
+            <div class="info-value" id="fuelCost" style="color: var(--success);">R$ 0,00</div>
+            <div class="info-label">Estimativa Ida e Volta</div>
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);" id="fuelDetail"></div>
+          </div>
         </div>
-        <label>Idempotency-Key (opcional) <input name="idem" placeholder="UUID ou texto único" /></label>
-        <button type="submit">Planejar viagem</button>
-      </form>
-      <pre id="out" hidden></pre>
-    </main>
+
+        <div class="result-grid">
+          <!-- Clima Ida -->
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="sun-snow"></i>
+              <h3>Clima na Chegada (Destino)</h3>
+            </div>
+            <div class="weather-grid">
+              <div>
+                <div class="info-value" id="climaIdaMax">--</div>
+                <div class="info-label">Máx</div>
+              </div>
+              <div>
+                <div class="info-value" id="climaIdaMin">--</div>
+                <div class="info-label">Mín</div>
+              </div>
+              <div>
+                <div class="info-value" id="climaIdaPrec">--</div>
+                <div class="info-label">Chuva</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clima Volta -->
+          <div class="info-card">
+            <div class="info-header">
+              <i data-lucide="sun-snow"></i>
+              <h3>Clima no Retorno (Origem)</h3>
+            </div>
+            <div class="weather-grid">
+              <div>
+                <div class="info-value" id="climaVoltaMax">--</div>
+                <div class="info-label">Máx</div>
+              </div>
+              <div>
+                <div class="info-value" id="climaVoltaMin">--</div>
+                <div class="info-label">Mín</div>
+              </div>
+              <div>
+                <div class="info-value" id="climaVoltaPrec">--</div>
+                <div class="info-label">Chuva</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="statusBadge" class="badge"></div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
-      const out = document.getElementById("out");
-      document.getElementById("f").addEventListener("submit", async (e) => {
+      // Initialize icons
+      lucide.createIcons();
+
+      const form = document.getElementById("travelForm");
+      const resultsDiv = document.getElementById("results");
+      const loadingDiv = document.getElementById("loading");
+      const submitBtn = document.getElementById("submitBtn");
+      
+      let map = null;
+
+      function initMap(lat1, lon1, lat2, lon2, label1, label2, geometry) {
+        if (map) {
+          map.remove();
+        }
+        
+        map = L.map('map').setView([lat1, lon1], 6);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const marker1 = L.marker([lat1, lon1]).addTo(map).bindPopup(label1);
+        const marker2 = L.marker([lat2, lon2]).addTo(map).bindPopup(label2);
+        
+        if (geometry) {
+          L.geoJSON(geometry, {
+            style: {
+              color: '#3b82f6',
+              weight: 5,
+              opacity: 0.8
+            }
+          }).addTo(map);
+        } else {
+          L.polyline([[lat1, lon1], [lat2, lon2]], {
+            color: '#ef4444',
+            weight: 4,
+            opacity: 0.7,
+            dashArray: '10, 10'
+          }).addTo(map);
+        }
+
+        const group = new L.featureGroup([marker1, marker2]);
+        map.fitBounds(group.getBounds().pad(0.2));
+      }
+
+      function formatTime(seconds) {
+        if (!seconds) return "--";
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        return `${h}h ${m}m`;
+      }
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const fd = new FormData(e.target);
         const headers = { "Content-Type": "application/json" };
-        const idem = (fd.get("idem") || "").toString().trim();
-        if (idem) headers["Idempotency-Key"] = idem;
+
+
         const body = {
           origem: fd.get("origem").toString().trim(),
           destino: fd.get("destino").toString().trim(),
           data_ida: fd.get("data_ida"),
           data_volta: fd.get("data_volta"),
         };
-        out.hidden = false;
-        out.textContent = "Consultando serviços…";
-        e.target.querySelector("button").disabled = true;
+
+        resultsDiv.style.display = "none";
+        loadingDiv.style.display = "block";
+        submitBtn.disabled = true;
+
         try {
-          const r = await fetch("/api/v1/planejamento", { method: "POST", headers, body: JSON.stringify(body) });
-          const j = await r.json().catch(() => ({}));
-          out.textContent = JSON.stringify({ status: r.status, ...j }, null, 2);
+          const r = await fetch("/api/v1/planejamento", { 
+            method: "POST", 
+            headers, 
+            body: JSON.stringify(body) 
+          });
+          const data = await r.json();
+
+          if (!r.ok) {
+            alert(data.detail || "Erro ao consultar serviço");
+            return;
+          }
+
+          console.log("Planejamento recebido:", data);
+
+          // Update UI
+          document.getElementById("rotaSummary").textContent = data.rota.resumo || "Rota calculada";
+          document.getElementById("distanciaValue").textContent = data.rota.distancia_km ? `${data.rota.distancia_km} km` : "0 km";
+          document.getElementById("tempoValue").textContent = formatTime(data.rota.duracao_segundos);
+          
+          const custo = data.combustivel.custo_medio_reais || 0;
+          document.getElementById("fuelCost").textContent = `R$ ${custo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+          document.getElementById("fuelDetail").textContent = `Base: ${data.combustivel.distancia_km || 0}km totais, R$${data.combustivel.preco_litro_reais || 0}/L, ${data.combustivel.consumo_km_por_litro || 0}km/L`;
+
+          // Weather
+          const fmtWeather = (val) => (val !== null && val !== undefined) ? `${val.toFixed(1)}°` : '--';
+          const fmtPrec = (val) => (val !== null && val !== undefined) ? `${val.toFixed(1)}mm` : '--';
+
+          document.getElementById("climaIdaMax").textContent = fmtWeather(data.clima_ida.temperatura_max_media_c);
+          document.getElementById("climaIdaMin").textContent = fmtWeather(data.clima_ida.temperatura_min_media_c);
+          document.getElementById("climaIdaPrec").textContent = fmtPrec(data.clima_ida.precipitacao_mm_media);
+
+          document.getElementById("climaVoltaMax").textContent = fmtWeather(data.clima_volta.temperatura_max_media_c);
+          document.getElementById("climaVoltaMin").textContent = fmtWeather(data.clima_volta.temperatura_min_media_c);
+          document.getElementById("climaVoltaPrec").textContent = fmtPrec(data.clima_volta.precipitacao_mm_media);
+
+          // Status Badge
+          const badge = document.getElementById("statusBadge");
+          const isDegraded = data.rota.degradado || data.clima_ida.degradado || data.combustivel.degradado;
+          badge.textContent = isDegraded ? "⚠️ Resposta com dados parciais (modo degradado)" : "✅ Planejamento concluído com sucesso";
+          badge.className = `badge ${isDegraded ? 'degraded' : ''}`;
+
+          resultsDiv.style.display = "flex";
+          
+          // Map
+          setTimeout(() => {
+            initMap(
+              data.rota.origem_lat, data.rota.origem_lon,
+              data.rota.destino_lat, data.rota.destino_lon,
+              data.rota.origem_resolvida, data.rota.destino_resolvido,
+              data.rota.geometria
+            );
+          }, 100);
+
         } catch (err) {
-          out.textContent = String(err);
+          console.error(err);
+          alert("Erro crítico: " + err.message);
         } finally {
-          e.target.querySelector("button").disabled = false;
+          loadingDiv.style.display = "none";
+          submitBtn.disabled = false;
         }
       });
     </script>
+    <style>
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </body>
 </html>
+

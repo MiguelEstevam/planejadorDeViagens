@@ -45,6 +45,7 @@ class RespostaRota(BaseModel):
     destino_lat: float
     destino_lon: float
     resumo: str
+    geometria: Optional[dict[str, Any]] = None
     degradado: bool = False
 
 
