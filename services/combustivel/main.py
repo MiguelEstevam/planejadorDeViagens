@@ -10,7 +10,7 @@ CONSUMO_KM_L = float(os.getenv("CONSUMO_KM_POR_LITRO", "12.0"))
 
 
 class CalcularEntrada(BaseModel):
-    distancia_km: float = Field(..., gt=0)
+    distancia_km: float = Field(..., ge=0)
 
 
 class CalcularSaida(BaseModel):

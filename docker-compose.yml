@@ -25,7 +25,7 @@ services:
     environment:
       NOMINATIM_URL: ${NOMINATIM_URL:-https://nominatim.openstreetmap.org/search}
       OSRM_URL: ${OSRM_URL:-https://router.project-osrm.org/route/v1/driving}
-      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-PlanejadorViagensInteligentes/1.0 (docker; acadêmico)}
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-PlanejadorViagensInteligentes/1.0 (docker; academico)}
 
   combustivel:
     build:

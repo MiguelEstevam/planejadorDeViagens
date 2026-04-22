@@ -51,8 +51,13 @@ def _idempotency_body_hash(body: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
+_redis_client = None
+
 async def _get_redis() -> redis.Redis:
-    return redis.from_url(REDIS_URL, decode_responses=True)
+    global _redis_client
+    if _redis_client is None:
+        _redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+    return _redis_client
 
 
 async def _call_with_retry(
@@ -166,10 +171,7 @@ async def _fetch_combustivel(distancia_ida_e_volta_km: float) -> RespostaCombust
 @app.get("/health")
 async def health():
     r = await _get_redis()
-    try:
-        pong = await r.ping()
-    finally:
-        await r.aclose()
+    pong = await r.ping()
     return {
         "status": "ok",
         "servico": "gateway",
@@ -199,7 +201,7 @@ async def planejamento(
     body_hash = _idempotency_body_hash(body_dict)
 
     rdb = await _get_redis()
-    try:
+    if True:
         cached = await rdb.get(cache_key)
         if cached:
             stored = await rdb.get(hash_key)
@@ -243,9 +245,6 @@ async def planejamento(
         await rdb.set(cache_key, body_json, ex=IDEMPOTENCY_TTL)
         await rdb.set(hash_key, body_hash, ex=IDEMPOTENCY_TTL)
         return resposta
-    finally:
-        await rdb.aclose()
-
 
 @app.get("/", include_in_schema=False)
 async def raiz():

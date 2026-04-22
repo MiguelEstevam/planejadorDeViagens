@@ -102,7 +102,6 @@ async def rota(
                 resumo="Estimativa por linha reta ajustada (OSRM indisponível).",
                 degradado=True,
             )
-        body = r.json()
         routes = body.get("routes") or []
         if not routes:
             dist = haversine_km(olat, olon, dlat, dlon) * 1.35
